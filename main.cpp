@@ -21,29 +21,23 @@ struct Person {
 void readUsers(vector <User> &users) {
   fstream file;
   file.open("user.txt", ios::in);
-  if (!file.good()) {
-    cout << "Your phonebook is empty. Please add some contacts!" << endl;
-    cout << "Press Enter to Continue";
-    cin.sync(), cin.get();
-  }
 
-  else {
-    string line, part;
-    User user;
-    vector <string> tempVector;
+  string line, part;
+  User user;
+  vector <string> tempVector;
 
-    while(getline(file, line)) {
-      stringstream partedLine (line);
-      while(getline(partedLine, part, '|')) {
-          tempVector.push_back(part);
-      }
-      user.id = atoi(tempVector[0].c_str());
-      user.name = tempVector[1];
-      user.password = tempVector[2];
-      users.push_back(user);
-      tempVector.clear();
+  while(getline(file, line)) {
+    stringstream partedLine (line);
+    while(getline(partedLine, part, '|')) {
+        tempVector.push_back(part);
     }
+    user.id = atoi(tempVector[0].c_str());
+    user.name = tempVector[1];
+    user.password = tempVector[2];
+    users.push_back(user);
+    tempVector.clear();
   }
+  
   file.close();
 }
 
@@ -83,6 +77,7 @@ void addAUser (vector <User> &users) {
     file << users[size].password << "|" << endl;
     file.close();
   }
+
   else cout << "User name already taken!" << endl;
 
 }
@@ -90,7 +85,6 @@ void addAUser (vector <User> &users) {
 int logIn (vector <User> &users) {
   string name, password;
   int size = users.size();
-  cout << size << " <- SIZE" << endl;
   cout << "Enter user name" << endl;
   cin >> name;
 
@@ -133,12 +127,12 @@ void changePassword(vector <User> &users, int userID) {
   }
   users.clear();
   readUsers(users);
-
 }
 
-void readContacts(vector <Person> &contacts) {
+void readContacts(vector <Person> &contacts, int userID) {
+  contacts.clear();
   fstream file;
-  file.open("file.txt", ios::in);
+  file.open("contacts.txt", ios::in);
   if (!file.good()) {
     cout << "Your phonebook is empty. Please add some contacts!" << endl;
     cout << "Press Enter to Continue";
@@ -153,8 +147,10 @@ void readContacts(vector <Person> &contacts) {
     while(getline(file, line)) {
       stringstream partedLine (line);
       while(getline(partedLine, part, '|')) {
-          tempVector.push_back(part);
+        tempVector.push_back(part);
       }
+
+      if (atoi(tempVector[1].c_str()) == userID) {
       contact.id = atoi(tempVector[0].c_str());
       contact.userID = atoi(tempVector[1].c_str());
       contact.firstName = tempVector[2];
@@ -164,13 +160,15 @@ void readContacts(vector <Person> &contacts) {
       contact.adress = tempVector[6];
       contacts.push_back(contact);
       tempVector.clear();
+      }
+
+      else tempVector.clear();
     }
   }
   file.close();
 }
 
 void addAContact(vector <Person> &contacts, int userID) {
-
   Person contact;
 
   cout << "Whats the first name?" << endl;
@@ -199,7 +197,7 @@ void addAContact(vector <Person> &contacts, int userID) {
   contacts.push_back(contact);
 
   fstream file;
-  file.open("file.txt", ios::out | ios::app); // ios::app appends
+  file.open("contacts.txt", ios::out | ios::app); // ios::app appends
   file << contacts[size].id << "|";
   file << userID << "|";
   file << contacts[size].firstName << "|";
@@ -208,7 +206,6 @@ void addAContact(vector <Person> &contacts, int userID) {
   file << contacts[size].email << "|";
   file << contacts[size].adress << "|" << endl;
   file.close();
-
 }
 
 void askForEnter () {
@@ -216,24 +213,26 @@ void askForEnter () {
   cin.ignore(), cin.get();
 }
 
-void displayContacts(vector <Person> &contacts) {
-  cout << endl << "You have " << contacts.size() << " current contacts in your phonebook: "  << endl;
+void displayContacts(vector <Person> &contacts, int userID) {
+  if (contacts.size() == 0) cout << "You have no contacts in the phonebook!" << endl;
 
   for (int i = 0; i < contacts.size(); i++) {
-    cout << "id: " << contacts[i].id;
-    cout << "  First name: " << contacts[i].firstName << "  Last name: " << contacts[i].lastName << "  Phone: " << contacts[i].phone;
-    cout << "  email: " << contacts[i].email << "  Adress: " << contacts[i].adress << endl << endl;
+    if (contacts[i].userID == userID) {
+      cout << "id: " << contacts[i].id;
+      cout << "  First name: " << contacts[i].firstName << "  Last name: " << contacts[i].lastName << "  Phone: " << contacts[i].phone;
+      cout << "  email: " << contacts[i].email << "  Adress: " << contacts[i].adress << endl << endl;
+    }
   }
 }
 
-void searchContactsByFirstName(vector <Person> &contacts) {
+void searchContactsByFirstName(vector <Person> &contacts, int userID) {
   string search;
   int counter = 0;
   cout << "Please, enter the first name to search" << endl;
   cin >> search;
 
   for (int i = 0; i < contacts.size(); i++) {
-    if (contacts[i].firstName == search) {
+    if (contacts[i].firstName == search && contacts[i].userID == userID) {
       counter++;
       cout << "* Found a contact with id number: " << contacts[i].id << endl;
       cout << "First name: " << contacts[i].firstName << "  Last name: " << contacts[i].lastName << "  Phone :" << contacts[i].phone;
@@ -246,14 +245,14 @@ void searchContactsByFirstName(vector <Person> &contacts) {
   }
 }
 
-void searchContactsByLastName(vector <Person> &contacts) {
+void searchContactsByLastName(vector <Person> &contacts, int userID) {
   string search;
   int counter = 0;
   cout << "Please, enter the last name to search" << endl;
   cin >> search;
 
   for (int i = 0; i < contacts.size(); i++) {
-    if (contacts[i].lastName == search) {
+    if (contacts[i].lastName == search && contacts[i].userID == userID) {
       counter++;
       cout << "* Found a contact with id number: " << contacts[i].id << endl;
       cout << "First name: " << contacts[i].firstName << "  Last name: " << contacts[i].lastName << "  Phone :" << contacts[i].phone;
@@ -266,35 +265,84 @@ void searchContactsByLastName(vector <Person> &contacts) {
   }
 }
 
-void rearrangeContacts(vector <Person> &contacts) {
-  ofstream fileDelete("file.txt");
-  fstream file;
-  int size = contacts.size();
+void rearrangeContacts(vector <Person> &contacts, int id, int userID, int counter) {
+  fstream file, fileTemp;
+  file.open("contacts.txt", ios::in);
+  fileTemp.open("contacts_temp.txt", ios::out | ios::app);
 
-  for (int i = 0; i < size; i ++) {
-  file.open("file.txt", ios::out | ios::app); // ios::app appends
-  file << contacts[i].id << "|";
-  file << contacts[i].firstName << "|";
-  file << contacts[i].lastName << "|";
-  file << contacts[i].phone << "|";
-  file << contacts[i].email << "|";
-  file << contacts[i].adress << "|" << endl;
-  file.close();
+  string line, part;
+  vector <string> tempVector;
+
+  while(getline(file, line)) {
+    stringstream partedLine (line);
+    while(getline(partedLine, part, '|')) {
+        tempVector.push_back(part);
+    }
+    
+    if (atoi(tempVector[0].c_str()) !=  id) {
+      fileTemp << line << endl;
+    }
+
+    else {
+      fileTemp << contacts[counter].id << "|";
+      fileTemp << contacts[counter].userID << "|";
+      fileTemp << contacts[counter].firstName << "|";
+      fileTemp << contacts[counter].lastName << "|";
+      fileTemp << contacts[counter].phone << "|";
+      fileTemp << contacts[counter].email << "|";
+      fileTemp << contacts[counter].adress << "|" << endl;
+    }
+
+    tempVector.clear();
   }
+
+  file.close();
+  fileTemp.close();
+  remove("contacts.txt");
+  rename("contacts_temp.txt","contacts.txt");
   contacts.clear();
-  readContacts(contacts);
+  readContacts(contacts, userID);
 }
 
-void removeAContact(vector <Person> &contacts) {
+void rearrangeContactsAfterDeletion(vector <Person> &contacts, int id, int userID, int counter) {
+  fstream file, fileTemp;
+  file.open("contacts.txt", ios::in);
+  fileTemp.open("contacts_temp.txt", ios::out | ios::app);
+
+  string line, part;
+  vector <string> tempVector;
+
+  while(getline(file, line)) {
+    stringstream partedLine (line);
+    while(getline(partedLine, part, '|')) {
+        tempVector.push_back(part);
+    }
+    
+    if (atoi(tempVector[0].c_str()) !=  id) {
+      fileTemp << line << endl;
+    }
+
+    tempVector.clear();
+  }
+
+  file.close();
+  fileTemp.close();
+  remove("contacts.txt");
+  rename("contacts_temp.txt","contacts.txt");
+  contacts.clear();
+  readContacts(contacts, userID);
+}
+
+void removeAContact(vector <Person> &contacts, int userID) {
   int id;
   int counter = 0;
-  displayContacts(contacts);
+  displayContacts(contacts, userID);
   cout << "Which id should get removed?" << endl;
   cin >> id;
 
   for (int i = 0; i < contacts.size(); i++) {
 
-    if (contacts[i].id == id) {
+    if (contacts[i].id == id && contacts[i].userID == userID) {
     counter++;
       cout << "Are you sure? Press 'y' to confirm or 'n' to abort" << endl;
       char choice;
@@ -302,12 +350,14 @@ void removeAContact(vector <Person> &contacts) {
       switch (choice) {
         case 'y': {
           contacts.erase(contacts.begin() + i);
-          rearrangeContacts(contacts);
+          rearrangeContactsAfterDeletion(contacts, id, userID, i);
           break;
           }
+
         case 'n': {
           break;
         }
+
         default: {
           break;
         }
@@ -320,55 +370,54 @@ void removeAContact(vector <Person> &contacts) {
   }
 }
 
-void editFirstName(vector <Person> &contacts, int id) {
+void editFirstName(vector <Person> &contacts, int id, int userID) {
   cout << "Enter new first name for the contact" << endl;
   for (int i = 0; i < contacts.size(); i ++) {
-    if (contacts[i].id == id) {
+    if (contacts[i].id == id && contacts[i].userID == userID) {
       cin >> contacts[i].firstName;
-      rearrangeContacts(contacts);
+      rearrangeContacts(contacts, id, userID, i);
     }
   }
 }
 
-void editLastName(vector <Person> &contacts, int id) {
-  int counter = 0;
+void editLastName(vector <Person> &contacts, int id, int userID) {
   cout << "Enter new last name for the contact" << endl;
   for (int i = 0; i < contacts.size(); i ++) {
-    if (contacts[i].id == id) {
+    if (contacts[i].id == id && contacts[i].userID == userID) {
       cin >> contacts[i].lastName;
-      rearrangeContacts(contacts);
+      rearrangeContacts(contacts, id, userID, i);
     }
   }
 }
 
-void editPhone(vector <Person> &contacts, int id) {
+void editPhone(vector <Person> &contacts, int id, int userID) {
   cout << "Enter new phone number for the contact" << endl;
   for (int i = 0; i < contacts.size(); i ++) {
-    if (contacts[i].id == id) {
+    if (contacts[i].id == id && contacts[i].userID == userID) {
       cin.ignore();
       getline(cin, contacts[i].phone);
-      rearrangeContacts(contacts);
+      rearrangeContacts(contacts, id, userID, i);
     }
   }
 }
 
-void editEmail(vector <Person> &contacts, int id) {
+void editEmail(vector <Person> &contacts, int id, int userID) {
   cout << "Enter new email for the contact" << endl;
   for (int i = 0; i < contacts.size(); i ++) {
-    if (contacts[i].id == id) {
+    if (contacts[i].id == id && contacts[i].userID == userID) {
       cin >> contacts[i].email;
-      rearrangeContacts(contacts);
+      rearrangeContacts(contacts, id, userID, i);
     }
   }
 }
 
-void editAdress(vector <Person> &contacts, int id) {
+void editAdress(vector <Person> &contacts, int id, int userID) {
   cout << "Enter new adress for the contact" << endl;
   for (int i = 0; i < contacts.size(); i ++){
-    if (contacts[i].id == id) {
+    if (contacts[i].id == id && contacts[i].userID == userID) {
       cin.ignore();
       getline(cin, contacts[i].adress);
-      rearrangeContacts(contacts);
+      rearrangeContacts(contacts, id, userID, i);
     }
   }
 }
@@ -376,9 +425,8 @@ void editAdress(vector <Person> &contacts, int id) {
 int main () {
   vector <User> users;
   vector <Person> contacts;
-  readContacts(contacts);
-  readUsers(users);
   int userID = 0;
+  readUsers(users);
 
   while (1) {
     if (userID == 0 ) {
@@ -392,7 +440,6 @@ int main () {
 
       if (choice == '1') {
         userID = logIn(users);
-        cout << endl << userID << " user id " << endl;
         Sleep(1500);
       }
 
@@ -407,6 +454,7 @@ int main () {
     }
     
     else {
+      readContacts(contacts, userID);
       char choice;
       system("cls");
       cout << "1. Add a contact" << endl;
@@ -425,22 +473,22 @@ int main () {
       }
 
       else if (choice == '2') {
-        searchContactsByFirstName(contacts);
+        searchContactsByFirstName(contacts, userID);
         askForEnter();
       }
 
       else if (choice == '3') {
-        searchContactsByLastName(contacts);
+        searchContactsByLastName(contacts, userID);
         askForEnter();
       }
 
       else if (choice == '4') {
-        displayContacts(contacts);
+        displayContacts(contacts, userID);
         askForEnter();
       }
 
       else if (choice == '5') {
-        removeAContact(contacts);
+        removeAContact(contacts, userID);
       }
 
       else if (choice == '6') {
@@ -448,7 +496,7 @@ int main () {
         int counter = 0;
         char choice2;
         system("cls");
-        displayContacts(contacts);
+        displayContacts(contacts, userID);
         cout << "Which contact do you want to edit? Enter id number" << endl;
         cin >> id;
 
@@ -477,27 +525,27 @@ int main () {
 
             switch (choice2) {
               case '1': {
-                editFirstName(contacts, id);
+                editFirstName(contacts, id, userID);
                 break;
               }
 
               case '2': {
-                editLastName(contacts, id);
+                editLastName(contacts, id, userID);
                 break;
               }
 
               case '3': {
-                editPhone(contacts, id);
+                editPhone(contacts, id, userID);
                 break;
               }
 
               case '4': {
-                editEmail(contacts, id);
+                editEmail(contacts, id, userID);
                 break;
               }
 
               case '5': {
-                editAdress(contacts, id);
+                editAdress(contacts, id, userID);
                 break;
               }
 
