@@ -8,10 +8,109 @@
 
 using namespace std;
 
+struct User {
+    int id;
+    string name, password;
+};
+
 struct Person {
   int id;
   string firstName, lastName, phone, email, adress;
 };
+
+void readUsers(vector <User> &users) {
+  fstream file;
+  file.open("user.txt", ios::in);
+  if (!file.good()) {
+    cout << "Your phonebook is empty. Please add some contacts!" << endl;
+    cout << "Press Enter to Continue";
+    cin.sync(), cin.get();
+  }
+
+  else {
+    string line, part;
+    User user;
+    vector <string> tempVector;
+
+    while(getline(file, line)) {
+      stringstream partedLine (line);
+      while(getline(partedLine, part, '|')) {
+          tempVector.push_back(part);
+      }
+      user.id = atoi(tempVector[0].c_str());
+      user.name = tempVector[1];
+      user.password = tempVector[2];
+      users.push_back(user);
+      tempVector.clear();
+    }
+  }
+  file.close();
+}
+
+void addAUser (vector <User> &users) {
+  User user;
+  string name;
+  int size = users.size();
+  int counter = 0;
+
+  cout << "Enter user name" << endl;
+  cin >> name;
+
+  for (int i = 0; i < size; i++) {
+    if (users[i].name == name) {
+      counter++;
+    }
+  }
+ 
+  if (counter == 0) {
+    if (size == 0) {
+    user.id = 1;
+    }
+
+    else {
+      user.id = users[size - 1].id + 1;
+    }
+
+    user.name = name;
+    cout << "Enter password" << endl;
+    cin >> user.password;
+    users.push_back(user);
+
+    fstream file;
+    file.open("user.txt", ios::out | ios::app); // ios::app appends
+    file << users[size].id << "|";
+    file << users[size].name << "|";
+    file << users[size].password << "|" << endl;
+    file.close();
+  }
+  else cout << "User name already taken!" << endl;
+
+}
+
+int logIn (vector <User> &users) {
+  string name, password;
+  int size = users.size();
+  cout << size << " <- SIZE" << endl;
+  cout << "Enter user name" << endl;
+  cin >> name;
+
+  for (int i = 0; i < size; i++) {
+    if (users[i].name == name) {
+      for (int j = 0; j < 3; j++) {
+        cout << "Enter password. You have " << 3 - j << " attempts left" << endl;
+        cin >> password;
+
+        if (users[i].password == password) {
+          cout << "You are logged in" << endl;
+          Sleep(1000);
+          return users[i].id;
+        }
+      }
+    }
+  }
+  cout << "No such user has been registered!" << endl;
+  return 0;
+}
 
 void readContacts(vector <Person> &contacts) {
   fstream file;
@@ -46,6 +145,7 @@ void readContacts(vector <Person> &contacts) {
 }
 
 void addAContact(vector <Person> &contacts) {
+
   Person contact;
 
   cout << "Whats the first name?" << endl;
@@ -238,7 +338,7 @@ void editEmail(vector <Person> &contacts, int id) {
 
 void editAdress(vector <Person> &contacts, int id) {
   cout << "Enter new adress for the contact" << endl;
-  for (int i = 0; i < contacts.size(); i ++) {
+  for (int i = 0; i < contacts.size(); i ++){
     if (contacts[i].id == id) {
       cin.ignore();
       getline(cin, contacts[i].adress);
@@ -248,118 +348,149 @@ void editAdress(vector <Person> &contacts, int id) {
 }
 
 int main () {
+  vector <User> users;
   vector <Person> contacts;
   readContacts(contacts);
+  readUsers(users);
+  int userID = 0;
 
   while (1) {
-    char choice;
-    system("cls");
-    cout << "1. Add a contact" << endl;
-    cout << "2. Search contacts by first name" << endl;
-    cout << "3. Search contacts by last name" << endl;
-    cout << "4. Display all contacts" << endl;
-    cout << "5. Remove a contact" << endl;
-    cout << "6. Edit a contact" << endl;
-    cout << "9. Quit program" << endl;
-
-    cin >> choice;
-
-    if (choice == '1') {
-      addAContact(contacts);
-    }
-
-    else if (choice == '2') {
-      searchContactsByFirstName(contacts);
-      askForEnter();
-    }
-
-    else if (choice == '3') {
-      searchContactsByLastName(contacts);
-      askForEnter();
-    }
-
-    else if (choice == '4') {
-      displayContacts(contacts);
-      askForEnter();
-    }
-
-    else if (choice == '5') {
-      removeAContact(contacts);
-    }
-
-    else if (choice == '6') {
-      int id;
-      int counter = 0;
-      char choice2;
+    if (userID == 0 ) {
+      char choiceq;
       system("cls");
-      displayContacts(contacts);
-      cout << "Which contact do you want to edit? Enter id number" << endl;
-      cin >> id;
+      cout << "1. Log in" << endl;
+      cout << "2. Register" << endl;
+      cout << "3. Quit program" << endl;
 
-      for (int i = 0; i < contacts.size(); i++) {
-        if (contacts[i].id == id) {
-          counter++;
-        }
+      cin >> choiceq;
+
+      if (choiceq == '1') {
+        userID = logIn(users);
+        cout << endl << userID << " user id " << endl;
+        Sleep(1500);
       }
 
-      switch (counter) {
-        case 0: {
-          cout << "There is no person with this id!" << endl;
-          Sleep(1500);
-          break;
-        }
+      else if (choiceq == '2') {
+        addAUser(users);
+        askForEnter();
+      }
 
-        default: {
-          cout << "What do you want to edit?" << endl;
-          cout << "1. First Name" << endl;
-          cout << "2. Last name" << endl;
-          cout << "3. Phone number" << endl;
-          cout << "4. E-mail"<< endl;
-          cout << "5. Adress" << endl;
-          cout << "6. Return to main menu" << endl;
-          cin >> choice2;
-
-          switch (choice2) {
-            case '1': {
-              editFirstName(contacts, id);
-              break;
-            }
-
-            case '2': {
-              editLastName(contacts, id);
-              break;
-            }
-
-            case '3': {
-              editPhone(contacts, id);
-              break;
-            }
-
-            case '4': {
-              editEmail(contacts, id);
-              break;
-            }
-
-            case '5': {
-              editAdress(contacts, id);
-              break;
-            }
-
-            case '6': {
-              break;
-            }
-
-            default: {
-              break;
-            }
-          }
-          break;
-        }
+      else if (choiceq == '3') {
+        searchContactsByLastName(contacts);
+        askForEnter();
       }
     }
+    
+    else {
+      char choice;
+      system("cls");
+      cout << "1. Add a contact" << endl;
+      cout << "2. Search contacts by first name" << endl;
+      cout << "3. Search contacts by last name" << endl;
+      cout << "4. Display all contacts" << endl;
+      cout << "5. Remove a contact" << endl;
+      cout << "6. Edit a contact" << endl;
+      cout << "9. Quit program" << endl;
 
-    else if (choice == '9') {
-      exit(0);
+      cin >> choice;
+
+      if (choice == '1') {
+        addAContact(contacts);
+      }
+
+      else if (choice == '2') {
+        searchContactsByFirstName(contacts);
+        askForEnter();
+      }
+
+      else if (choice == '3') {
+        searchContactsByLastName(contacts);
+        askForEnter();
+      }
+
+      else if (choice == '4') {
+        displayContacts(contacts);
+        askForEnter();
+      }
+
+      else if (choice == '5') {
+        removeAContact(contacts);
+      }
+
+      else if (choice == '6') {
+        int id;
+        int counter = 0;
+        char choice2;
+        system("cls");
+        displayContacts(contacts);
+        cout << "Which contact do you want to edit? Enter id number" << endl;
+        cin >> id;
+
+        for (int i = 0; i < contacts.size(); i++) {
+          if (contacts[i].id == id) {
+            counter++;
+          }
+        }
+
+        switch (counter) {
+          case 0: {
+            cout << "There is no person with this id!" << endl;
+            Sleep(1500);
+            break;
+          }
+
+          default: {
+            cout << "What do you want to edit?" << endl;
+            cout << "1. First Name" << endl;
+            cout << "2. Last name" << endl;
+            cout << "3. Phone number" << endl;
+            cout << "4. E-mail"<< endl;
+            cout << "5. Adress" << endl;
+            cout << "6. Return to main menu" << endl;
+            cin >> choice2;
+
+            switch (choice2) {
+              case '1': {
+                editFirstName(contacts, id);
+                break;
+              }
+
+              case '2': {
+                editLastName(contacts, id);
+                break;
+              }
+
+              case '3': {
+                editPhone(contacts, id);
+                break;
+              }
+
+              case '4': {
+                editEmail(contacts, id);
+                break;
+              }
+
+              case '5': {
+                editAdress(contacts, id);
+                break;
+              }
+
+              case '6': {
+                break;
+              }
+
+              default: {
+                break;
+              }
+            }
+            break;
+          }
+        }
+      }
+
+      else if (choice == '9') {
+        exit(0);
+      }
     }
   }
 
