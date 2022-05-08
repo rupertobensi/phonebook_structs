@@ -127,6 +127,7 @@ void changePassword(vector <User> &users, int userID) {
   }
   users.clear();
   readUsers(users);
+  cout << "Password has been succesfully changed" << endl;
 }
 
 void readContacts(vector <Contact> &contacts, int userID) {
@@ -168,7 +169,7 @@ void readContacts(vector <Contact> &contacts, int userID) {
   file.close();
 }
 
-int getContactID(vector <Contact> &contacts) {
+int getContactID() {
   int contactID;
   fstream file;
   file.open("contacts.txt", ios::in);
@@ -208,7 +209,7 @@ void addAContact(vector <Contact> &contacts, int userID) {
   getline(cin, contact.adress);
 
   int size = contacts.size();
-  contact.id = getContactID(contacts);
+  contact.id = getContactID();
   contacts.push_back(contact);
 
   fstream file;
@@ -224,7 +225,7 @@ void addAContact(vector <Contact> &contacts, int userID) {
 }
 
 void askForEnter () {
-  cout << "Press Enter to Continue";
+  cout << "Press Enter to continue";
   cin.ignore(), cin.get();
 }
 
@@ -453,18 +454,23 @@ int main () {
 
       cin >> choice;
 
-      if (choice == '1') {
-        userID = logIn(users);
-        Sleep(1500);
-      }
+      switch (choice) {
+        case '1': {
+          userID = logIn(users);
+          Sleep(1500);
+          break;
+        }
 
-      else if (choice == '2') {
-        addAUser(users);
-        askForEnter();
-      }
+        case '2': {
+          addAUser(users);
+          askForEnter();
+          break;
+        }
 
-      else if (choice == '3') {
-        exit(0);
+        case '3': {
+          exit(0);
+          break;
+        }
       }
     }
     
@@ -483,109 +489,119 @@ int main () {
 
       cin >> choice;
 
-      if (choice == '1') {
-        addAContact(contacts, userID);
-      }
-
-      else if (choice == '2') {
-        searchContactsByFirstName(contacts, userID);
-        askForEnter();
-      }
-
-      else if (choice == '3') {
-        searchContactsByLastName(contacts, userID);
-        askForEnter();
-      }
-
-      else if (choice == '4') {
-        displayContacts(contacts, userID);
-        askForEnter();
-      }
-
-      else if (choice == '5') {
-        removeAContact(contacts, userID);
-      }
-
-      else if (choice == '6') {
-        int id;
-        int counter = 0;
-        char choice2;
-        system("cls");
-        displayContacts(contacts, userID);
-        cout << "Which contact do you want to edit? Enter id number" << endl;
-        cin >> id;
-
-        for (int i = 0; i < contacts.size(); i++) {
-          if (contacts[i].id == id) {
-            counter++;
-          }
+      switch (choice) {
+        case '1': {
+          addAContact(contacts, userID);
+          break;
         }
 
-        switch (counter) {
-          case 0: {
-            cout << "There is no person with this id!" << endl;
-            Sleep(1500);
-            break;
-          }
+        case '2': {
+          searchContactsByFirstName(contacts, userID);
+          askForEnter();
+          break;
+        }
 
-          default: {
-            cout << "What do you want to edit?" << endl;
-            cout << "1. First Name" << endl;
-            cout << "2. Last name" << endl;
-            cout << "3. Phone number" << endl;
-            cout << "4. E-mail"<< endl;
-            cout << "5. Adress" << endl;
-            cout << "6. Return to main menu" << endl;
-            cin >> choice2;
+        case '3': {
+          searchContactsByLastName(contacts, userID);
+          askForEnter();
+          break;
+        }
 
-            switch (choice2) {
-              case '1': {
-                editFirstName(contacts, id, userID);
-                break;
-              }
+        case '4': {
+          displayContacts(contacts, userID);
+          askForEnter();
+          break;
+        }
 
-              case '2': {
-                editLastName(contacts, id, userID);
-                break;
-              }
+        case '5': {
+          removeAContact(contacts, userID);
+          break;
+        }
 
-              case '3': {
-                editPhone(contacts, id, userID);
-                break;
-              }
+        case '6': {
+          int id;
+          int counter = 0;
+          char choice2;
+          system("cls");
+          displayContacts(contacts, userID);
+          cout << "Which contact do you want to edit? Enter id number" << endl;
+          cin >> id;
 
-              case '4': {
-                editEmail(contacts, id, userID);
-                break;
-              }
-
-              case '5': {
-                editAdress(contacts, id, userID);
-                break;
-              }
-
-              case '6': {
-                break;
-              }
-
-              default: {
-                break;
-              }
+          for (int i = 0; i < contacts.size(); i++) {
+            if (contacts[i].id == id) {
+              counter++;
             }
-            break;
           }
+
+          switch (counter) {
+            case 0: {
+              cout << "There is no person with this id!" << endl;
+              Sleep(1500);
+              break;
+            }
+
+            default: {
+              cout << "What do you want to edit?" << endl;
+              cout << "1. First Name" << endl;
+              cout << "2. Last name" << endl;
+              cout << "3. Phone number" << endl;
+              cout << "4. E-mail"<< endl;
+              cout << "5. Adress" << endl;
+              cout << "6. Return to main menu" << endl;
+              cin >> choice2;
+
+              switch (choice2) {
+                case '1': {
+                  editFirstName(contacts, id, userID);
+                  break;
+                }
+
+                case '2': {
+                  editLastName(contacts, id, userID);
+                  break;
+                }
+
+                case '3': {
+                  editPhone(contacts, id, userID);
+                  break;
+                }
+
+                case '4': {
+                  editEmail(contacts, id, userID);
+                  break;
+                }
+
+                case '5': {
+                  editAdress(contacts, id, userID);
+                  break;
+                }
+
+                case '6': {
+                  break;
+                }
+
+                default: {
+                  break;
+                }
+              }
+              break;
+            }
+          }
+          break;
         }
-      }
 
-      else if (choice == '7') {
-        changePassword(users, userID);
-      }
+        case '7': {
+          changePassword(users, userID);
+          askForEnter();
+          break;
+        }
 
-      else if (choice == '8') {
-        userID = 0;
+        case '8': {
+          userID = 0;
+          break;
+        }
       }
     }
   }
-
   return 0;
 }
